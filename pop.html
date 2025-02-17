@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        h2{
+            text-align: center;
+        }
+
+        body {
+            background-image: url('lll.jpg'); /* Replace with your image path or URL */
+            background-size: cover; /* Ensures the image covers the entire background */
+            background-repeat: no-repeat; /* Prevents the image from repeating */
+            background-position: center; /* Centers the image */
+            height: 100vh; /* Makes sure it covers the full screen */
+            margin: 0; /* Removes any default margin */
+        }
+
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color:  rgb(90, 31, 228);
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .btn, .option-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color:  #00bbe1;
+            color:#000000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover, .option-btn:hover {
+            background-color: #e1dd00;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: #44c615;
+            color: rgb(5, 2, 2);
+        }
+        .question {
+            margin: 20px 0;
+        }
+        .result p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+
+
+    <!-- <h2>Quiz App</h2>
+        <img src="logo.png" alt="Quiz Logo" width="150px">
+        <p>Welcome to the Quiz App! Please enter your name to continue.</p> -->
+
+<div class="container">
+
+    <!-- User Details Section -->
+    <div id="home-section" class="section active">
+        <img src="ll.png" alt="Quiz Logo" width="150px">
+        <h2>Welcome to the Quiz App!</h2>
+        <!-- <img src="ll.png" alt="Quiz Logo" width="150px"> -->
+        <p>Please enter your name to continue:</p>
+        <input type="text" id="username" placeholder="Enter your name" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+        <button class="btn" onclick="enterQuiz()">Enter</button>
+    </div>
+
+    <!-- Category Section -->
+    <div id="category-section" class="section">
+        <h2>Select a Category</h2>
+        <button class="btn" onclick="startQuiz('Pipes and Cisterns')">Pipes and Cisterns</button>
+        <button class="btn" onclick="startQuiz('Probability')">Probability</button>
+        <button class="btn" onclick="startQuiz('Problems on Age')">Problems on Age</button>
+        <button class="btn" onclick="startQuiz('Profit and Loss')">Profit and Loss</button>
+    </div>
+
+    <!-- Quiz Section -->
+    <div id="quiz-section" class="section">
+        <div class="header">
+            <div id="timer">Time: 00:00</div>
+            <div id="score">Score: 0</div>
+        </div>
+        <div class="question" id="question-number">Question 1/10</div>
+        <div class="question" id="question-text">What is 2 + 2?</div>
+        <div class="options">
+            <button class="option-btn" onclick="selectAnswer(0)">A) 1</button>
+            <button class="option-btn" onclick="selectAnswer(1)">B) 2</button>
+            <button class="option-btn" onclick="selectAnswer(2)">C) 3</button>
+            <button class="option-btn" onclick="selectAnswer(3)">D) 4</button>
+        </div>
+        <button class="btn" onclick="nextQuestion()">Next Question</button>
+    </div>
+
+    <!-- Result Section -->
+    <div id="result-section" class="section result">
+        <h2>Quiz Result</h2>
+        <p id="result-username">Name: </p>
+        <p id="result-time">Total Time Taken: </p>
+        <p id="result-total">Total Questions: 10</p>
+        <p id="result-attempt">Attempted Questions: </p>
+        <p id="result-correct">Correct Answers: </p>
+        <p id="result-wrong">Wrong Answers: </p>
+        <p id="result-score">Score: </p>
+        <button class="btn" onclick="restartQuiz()">Start Again</button>
+        <button class="btn" onclick="goHome()">Go to Home</button>
+    </div>
+
+</div>
+
+<script>
+    let userName = '';
+    let category = '';
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let totalQuestions = 10;
+    let questions = [];
+    let timer = 0;
+    let interval;
+    
+    const sampleQuestions = {
+        
+        "Pipes and Cisterns": [
+    { question: "A pipe can fill a tank in 6 hours. How much of the tank is filled in 2 hours?", options: ["1/3", "1/4", "1/2", "1/6"], answer: 0 },
+    { question: "Two pipes can fill a tank in 10 hours and 12 hours, respectively. How long will it take to fill the tank if both pipes are opened together?", options: ["5 hours", "5.45 hours", "6 hours", "6.25 hours"], answer: 1 },
+    { question: "A cistern has two pipes. One can fill it in 5 hours and the other can empty it in 8 hours. How long will it take to fill the cistern when both pipes are opened?", options: ["40 hours", "20 hours", "10 hours", "13.33 hours"], answer: 3 },
+    { question: "Pipe A can fill a tank in 8 hours, while pipe B can fill it in 12 hours. If both pipes are opened together, what part of the tank will be filled in 1 hour?", options: ["1/6", "1/7", "1/10", "1/9"], answer: 0 },
+    { question: "A tank can be filled by one pipe in 6 hours and by another pipe in 4 hours. How long will it take to fill the tank if both pipes are opened together?", options: ["2.4 hours", "2.5 hours", "2 hours", "3 hours"], answer: 1 },
+    { question: "A tank has a leak that would empty it in 8 hours. A pipe can fill the tank in 6 hours. How long will it take to fill the tank with both the pipe and leak working together?", options: ["16 hours", "24 hours", "12 hours", "48 hours"], answer: 2 },
+    { question: "Pipe A can fill a tank in 10 hours and pipe B can fill it in 15 hours. If both pipes are opened together, how long will it take to fill the tank?", options: ["5 hours", "6 hours", "7.5 hours", "9 hours"], answer: 1 },
+    { question: "A pipe can fill a tank in 9 hours, but due to a leak, it takes 12 hours to fill it. How long would it take for the leak to empty a full tank?", options: ["18 hours", "24 hours", "36 hours", "30 hours"], answer: 2 },
+    { question: "Pipe A can fill a tank in 12 hours. Pipe B can fill the same tank in 15 hours, but a third pipe C can empty the tank in 6 hours. If all three pipes are opened together, how long will it take to fill the tank?", options: ["30 hours", "24 hours", "36 hours", "60 hours"], answer: 3 },
+    { question: "Two pipes can fill a tank in 20 and 30 minutes respectively. If both pipes are opened together, in how many minutes will the tank be filled?", options: ["12 minutes", "15 minutes", "18 minutes", "10 minutes"], answer: 0 }
+],
+
+        
+        "Probability": [
+    { question: "What is the probability of getting heads in a coin toss?", options: ["1/2", "1/3", "1/4", "1/5"], answer: 0 },
+    { question: "What is the probability of rolling a 6 on a fair die?", options: ["1/3", "1/6", "1/5", "1/2"], answer: 1 },
+    { question: "If you draw a card from a standard deck, what is the probability of drawing a heart?", options: ["1/2", "1/3", "1/4", "1/5"], answer: 2 },
+    { question: "What is the probability of getting a sum of 7 when rolling two dice?", options: ["1/6", "1/8", "1/12", "1/9"], answer: 0 },
+    { question: "In a bag with 5 red balls and 3 green balls, what is the probability of picking a red ball?", options: ["5/8", "3/8", "1/2", "2/5"], answer: 0 },
+    { question: "If two coins are tossed, what is the probability of getting at least one tail?", options: ["1/4", "1/2", "3/4", "1/8"], answer: 2 },
+    { question: "What is the probability of drawing an ace from a standard deck of cards?", options: ["1/52", "1/26", "1/13", "1/4"], answer: 2 },
+    { question: "A jar contains 4 blue balls, 3 red balls, and 2 green balls. What is the probability of drawing a green ball?", options: ["2/9", "2/6", "1/3", "1/9"], answer: 0 },
+    { question: "What is the probability of getting two heads when tossing two coins?", options: ["1/4", "1/3", "1/2", "3/4"], answer: 0 },
+    { question: "If a card is drawn at random from a standard deck of cards, what is the probability of getting a queen?", options: ["1/52", "1/26", "1/13", "4/52"], answer: 2 }
+],
+    
+        "Problems on Age": [
+    { question: "The sum of the ages of a father and his son is 60 years. If the father's age is twice that of his son, what is the son's age?", options: ["15 years", "20 years", "25 years", "30 years"], answer: 1 },
+    { question: "In 10 years, a father will be 3 times as old as his son. If the father is currently 30 years old, what is the son's current age?", options: ["5 years", "10 years", "8 years", "6 years"], answer: 3 },
+    { question: "The ratio of the present ages of A and B is 4:5. After 5 years, the ratio will be 5:6. What is the present age of B?", options: ["20 years", "25 years", "30 years", "35 years"], answer: 1 },
+    { question: "A father is currently 24 years older than his son. In two years, his age will be twice the age of his son. What is the son's current age?", options: ["20 years", "18 years", "22 years", "24 years"], answer: 0 },
+    { question: "The ages of A and B are in the ratio 3:4. Four years later, the ratio of their ages will be 4:5. What is the present age of A?", options: ["12 years", "15 years", "18 years", "20 years"], answer: 1 },
+    { question: "Ten years ago, the ages of A and B were in the ratio 1:2. If the sum of their present ages is 45 years, what is B's present age?", options: ["25 years", "30 years", "35 years", "40 years"], answer: 1 },
+    { question: "The present ages of a mother and her daughter are in the ratio of 7:3. Four years ago, the ratio of their ages was 5:2. What is the present age of the daughter?", options: ["9 years", "12 years", "15 years", "18 years"], answer: 1 },
+    { question: "The age of a man is three times the sum of the ages of his two sons. Five years later, his age will be double the sum of their ages. What is the man’s present age?", options: ["36 years", "40 years", "45 years", "50 years"], answer: 2 },
+    { question: "The present age of a man is 5 times that of his son. After 20 years, the man’s age will be twice that of his son. What is the present age of the son?", options: ["15 years", "10 years", "8 years", "12 years"], answer: 1 },
+    { question: "The sum of the ages of a mother and her daughter is 50 years. The mother is 4 times as old as the daughter. What is the daughter’s age?", options: ["10 years", "12 years", "15 years", "20 years"], answer: 0 }
+],
+
+         "Profit and Loss": [
+    { question: "A man bought a watch for $600 and sold it for $750. What is his profit percentage?", options: ["20%", "25%", "30%", "35%"], answer: 1 },
+    { question: "If a trader sells a commodity at a 15% profit, and its cost price is $400, what is the selling price?", options: ["$460", "$450", "$470", "$480"], answer: 0 },
+    { question: "A shopkeeper sold an article for $120 at a loss of 20%. What was the cost price of the article?", options: ["$130", "$150", "$160", "$180"], answer: 1 },
+    { question: "A man sold a chair for $50 at a gain of 25%. What was the cost price of the chair?", options: ["$30", "$35", "$40", "$45"], answer: 2 },
+    { question: "By selling an article for $240, a shopkeeper incurs a loss of 20%. What is the cost price of the article?", options: ["$280", "$300", "$320", "$360"], answer: 1 },
+    { question: "A man sold two articles for $400 each. On one, he gains 25% and on the other, he loses 25%. What is his overall profit or loss percentage?", options: ["No profit, no loss", "6.25% loss", "12.5% loss", "12.5% gain"], answer: 1 },
+    { question: "If an article is sold at a 10% loss and its selling price is $180, what is the cost price of the article?", options: ["$200", "$210", "$220", "$230"], answer: 0 },
+    { question: "A merchant sold a TV at 10% profit. If the cost price was $500, what was the selling price?", options: ["$550", "$525", "$600", "$575"], answer: 0 },
+    { question: "An article was bought for $400 and sold at a 15% loss. What is the selling price of the article?", options: ["$330", "$340", "$350", "$360"], answer: 1 },
+    { question: "A person bought a bike for $900 and sold it at a gain of 20%. What is the selling price of the bike?", options: ["$1000", "$1050", "$1080", "$1100"], answer: 2 }
+]
+
+
+        
+    };
+
+    function enterQuiz() {
+        userName = document.getElementById('username').value;
+        if (!userName) {
+            alert("Please enter your name");
+            return;
+        }
+        document.getElementById('home-section').classList.remove('active');
+        document.getElementById('category-section').classList.add('active');
+    }
+
+    function startQuiz(selectedCategory) {
+        category = selectedCategory;
+        questions = sampleQuestions[category];
+        currentQuestionIndex = 0;
+        score = 0;
+        timer = 0;
+        document.getElementById('category-section').classList.remove('active');
+        document.getElementById('quiz-section').classList.add('active');
+        startTimer();
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const currentQuestion = questions[currentQuestionIndex];
+        document.getElementById('question-number').innerText = `Question ${currentQuestionIndex + 1}/${totalQuestions}`;
+        document.getElementById('question-text').innerText = currentQuestion.question;
+        document.querySelectorAll('.option-btn').forEach((btn, index) => {
+            btn.innerText = currentQuestion.options[index];
+        });
+    }
+
+    function selectAnswer(selectedIndex) {
+        const currentQuestion = questions[currentQuestionIndex];
+        if (selectedIndex === currentQuestion.answer) {
+            score++;
+        }
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            stopTimer();
+            showResult();
+        }
+    }
+
+    function startTimer() {
+        interval = setInterval(() => {
+            timer++;
+            const minutes = Math.floor(timer / 60);
+            const seconds = timer % 60;
+            document.getElementById('timer').innerText = `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(interval);
+    }
+
+    function showResult() {
+        document.getElementById('quiz-section').classList.remove('active');
+        document.getElementById('result-section').classList.add('active');
+
+        document.getElementById('result-username').innerText = `Name: ${userName}`;
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+        document.getElementById('result-time').innerText = `Total Time Taken: ${minutes} minutes ${seconds} seconds`;
+        document.getElementById('result-attempt').innerText = `Attempted Questions: ${questions.length}`;
+        document.getElementById('result-correct').innerText = `Correct Answers: ${score}`;
+        document.getElementById('result-wrong').innerText = `Wrong Answers: ${questions.length - score}`;
+        document.getElementById('result-score').innerText = `Score: ${(score / questions.length) * 100}%`;
+    }
+
+    function restartQuiz() {
+        document.getElementById('result-section').classList.remove('active');
+        document.getElementById('quiz-section').classList.add('active');
+        startQuiz(category);
+    }
+
+    function goHome() {
+        document.getElementById('result-section').classList.remove('active');
+        document.getElementById('home-section').classList.add('active');
+    }
+</script>
+
+</body>
+</html>
